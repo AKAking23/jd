@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>购物车</title>
+		<meta name="viewport" content="initial-scale=1,user-scalable=no,width=device-width"/>
+		<link rel="stylesheet" href="css/reset.css" />
+		<style type="text/css">
+			body{
+				font-size:0.16rem;
+				background: #F7F7F7;
+			}
+			.product-item{
+				width:100%;
+				background: #fff;
+				border-radius: 0.15rem;
+				margin:0.15rem 0;
+				display:flex;
+				justify-content: space-around;
+			}
+			.check label p,footer label p{
+				width:40px;
+				height: 40px;
+				border-radius: 50%;
+				overflow: hidden;
+				background-image:url(img/cart-sprite.png);
+				border:1px solid black;
+				background-position:-999px -999px;
+				transform:scale(0.5);
+				background-repeat:no-repeat;
+			}
+			.check label input,footer label input{
+				visibility: hidden;
+				position: absolute;
+			}
+			.check label input:checked+p,footer label input:checked+p{
+				background-position:-73px -12px;
+				border:1px solid transparent;
+			}
+			.check{
+				position: relative;
+				display: flex;
+				align-items: center;
+			}
+			
+			.product img{
+				width:1.4rem;
+				height:1.4rem;
+				border-radius: 10px;
+				float: left;
+				margin-right:0.1rem;
+			}
+			.product{
+				width:4.5rem;
+				
+			}
+			.detail{
+				padding:0.2rem 0;
+			}
+			.detail h3{
+				height:0.4rem;
+				line-height: 0.2rem;
+				overflow: hidden;
+				
+			}
+			.detail>div{
+				display:flex;
+				justify-content: space-between;
+			}
+			.detail .price{
+				color:#E43130;
+				font-size:0.2rem;
+				font-weight: bold;
+			}
+			.detail .price span{
+				font-size:0.16rem;
+			}
+			.control button{
+				border:0;
+				background:transparent;
+				font-weight: bold;
+				width:0.2rem;
+				height:0.2rem;
+				
+			}
+			.control input{
+				width:0.5rem;
+				text-align: center;
+				height: 0.2rem;
+				border:0;
+				background: #f7f7f7;
+			}
+			.del{
+				border:0;
+				background:transparent;
+				float: right;
+			}
+			
+			footer{
+				height:0.5rem;
+				position: fixed;
+				width:100%;
+				bottom:0;
+				left:0;
+				background: #fff;
+				border-top:1px solid #d3d3d3;
+				display:flex;
+				padding:0 0.15rem;
+				justify-content: space-between;
+				align-items: center;
+				box-sizing: border-box;
+			}
+			.calc-price{
+				font-size:0.2rem;
+				font-weight: bold;
+			}
+			.checkall{
+				display: flex;
+				align-items:center;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<main>
+			<!--<div class="product-item">
+				<div class="check">
+					<label>
+						<input type="checkbox" checked/>
+						<p></p>
+					</label>
+				</div>
+				<div class="product">
+					<img src="img/ia_100000014.jpg"/>
+					<div class="detail">
+						<h3>标题</h3>
+						<div>
+							<p class="price"><span>￥</span>1299</p>
+							<div class="control">
+								<button class="minus">-</button>
+								<input type="text" value="1" />
+								<button class="add">+</button>
+							</div>
+						</div>
+					</div>
+					<button class="del">删除</button>
+				</div>
+				
+			</div>-->
+		</main>
+		<footer>
+			<div class="checkall">
+				<label>
+					<input type="checkbox" checked/>
+					<p></p>
+				</label>
+				<span>全选</span>
+			</div>
+			<div class="calc-price">
+				<div>
+					总价
+					<span class="total-price">￥9999</span>
+				</div>
+			</div>
+		</footer>
+	</body>
+	<script src="js/rem.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/zepto.min.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+
+		$.ajax({
+			url:"js/product.json",
+			success:function(res){
+				$.each(res,function(index,item){
+					if(localStorage["id"+item.pid]){
+						var num=localStorage.getItem("id"+item.pid+"num")
+						//获取对应的此商品的数量
+						var el=$(`<div class="product-item" data-pid="${item.pid}">
+				<div class="check">
+					<label>
+						<input type="checkbox" checked/>
+						<p></p>
+					</label>
+				</div>
+				<div class="product">
+					<img src="${item.imgSrc}"/>
+					<div class="detail">
+						<h3>${item.title}</h3>
+						<div>
+							<p class="price"><span>￥</span>${item.price}</p>
+							<div class="control">
+								<button class="minus">-</button>
+								<input type="text" value="${num}" />
+								<button class="add">+</button>
+							</div>
+						</div>
+					</div>
+					<button class="del">删除</button>
+				</div>
+				
+			</div>`)
+				$("main").append(el)
+					}
+				})
+			}
+		})
+		
+		
+		$("main").on("touchstart",".add",function(){
+			//获取点击的按钮的前一个兄弟节点，也就是input输入框，的value值，自增后再重新赋值给这个input
+			var val1=$(this).prev().val()
+			val1++
+			$(this).prev().val(val1)
+			$(this).siblings(".minus").prop("disabled",false)
+			cal()
+			
+		})
+		
+		$("main").on("touchstart",".minus",function(){
+			var val1=$(this).next().val()
+			val1--
+			if(val1<=1){
+				val1=1
+				$(this).prop("disabled",true)
+			}else{
+				$(this).prop("disabled",false)
+			}
+			$(this).next().val(val1)
+			cal()
+		})
+		
+		$(".checkall input").on("change",function(){
+			var checked=$(this).prop("checked")
+			$("main").find("input[type=checkbox]").prop("checked",checked)
+			cal()
+		})
+		$("main").on("change",".check input",function(){
+			var len=$("main").find(".check input").length//所有商品的总长度
+			var checkedLen=$("main").find(".check input:checked").length//被选中的商品的长度
+			if(len===checkedLen){
+				//判断商品的总长度和被选中的商品的商都是否一致
+				$(".checkall input").prop("checked",true)
+			}else{
+				$(".checkall input").prop("checked",false)
+			}
+			
+			cal()
+			
+			
+			
+		})
+		
+		function cal(){
+			//计算总价
+			var totalPrice=0 //总价
+			$(".check input:checked").each(function(index,item){
+				var checkbox=$(".check input:checked").eq(index)
+				var num=checkbox.parents(".product-item").find(".control input").val()
+				var price=checkbox.parents(".product-item").find(".price").text().substr(1)
+				totalPrice+=num*price
+			})
+			$(".total-price").text("￥"+totalPrice)
+		}
+	</script>
+</html>
